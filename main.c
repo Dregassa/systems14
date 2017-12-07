@@ -3,46 +3,53 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
-
-#define KEY 12345
+#include <string.h>
+#define KEY 23545 
 
 int create_sem(int count){
-	int semd = semget(KEY, 1, IPC_CREAT | IPC_EXCL | 0600);
+	int semd = semget(KEY, 1, IPC_CREAT | IPC_EXCL | 0644);
+	
 	semctl(semd, 0, SETVAL, count);
 	return semd;
 }
 
 int view_sem(){
-	return semctl(KEY, 0, GETVAL);
+	int semd = semget(KEY,0,0);
+	return semctl(semd, 0, GETVAL);
 }
 
 int rem_sem(){
-	return semctl(KEY, 0, IPC_RMID);
+	int semd = semget(KEY,0,0);
+	return semctl(semd, 0, IPC_RMID);
 }
 
 void usage(){
-	perror("USAGE ./control <-c N | -v | -r>");
+	printf("USAGE ./control <-c N | -v | -r>");
+	exit(1);
 }
+
 
 int main(int argc, char ** argv){
 	//if (argc != 2){
 	//	usage();
 	//}
-	
+	printf("%s\n", argv[1]);	
+
 	int ret;
 	
-	if ( argv[1] == "-c"){
-		ret = create_sem( atoi(argv[2]) );
-		printf("semaphore created: %d\n value set: 0\n", ret);
+	if ( !strcmp(argv[1], "-c") ){
+		int value = atoi(argv[2]);
+		ret = create_sem( value );
+		printf("semaphore created: %d\nvalue set: %d\n", ret, value);
 	}
 	
-	else if (argv[1] == "-v"){
+	else if ( !strcmp(argv[1], "-v") ){
 		ret = view_sem();
 		printf("semaphore value: %d\n", ret);
 		
 	}
 
-	else if (argv[1] == "-r"){
+	else if ( !strcmp(argv[1], "-r") ){
 		ret = rem_sem();
 		printf("semaphore removed: %d\n", ret);
 	}
